@@ -14,6 +14,8 @@ impl Board {
 
         let mut board = Self::blank_board();
 
+        board.set_to_move(if fields[1] == "w" { Player::White } else { Player::Black });
+
         let rows = fields[0].split("/").collect::<Vec<_>>();
 
         if rows.len() != 8 {

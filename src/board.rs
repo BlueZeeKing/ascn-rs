@@ -33,16 +33,7 @@ impl Board {
 
     pub fn blank_board() -> Self {
         Self {
-            board: [
-                [None, None, None, None, None, None, None, None],
-                [None, None, None, None, None, None, None, None],
-                [None, None, None, None, None, None, None, None],
-                [None, None, None, None, None, None, None, None],
-                [None, None, None, None, None, None, None, None],
-                [None, None, None, None, None, None, None, None],
-                [None, None, None, None, None, None, None, None],
-                [None, None, None, None, None, None, None, None],
-            ],
+            board: BLANK_BOARD,
             to_move: Player::White,
         }
     }
