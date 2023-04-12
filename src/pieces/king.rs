@@ -14,17 +14,15 @@ impl PartialPiece for King {
 #[cfg(test)]
 mod tests {
     use crate::{
-        board::{ Board, BoardPosition },
+        board::{ Board, position::BoardPosition },
         pieces::{ PieceType, Piece, Player, PartialPiece, king::King },
     };
 
     #[test]
     fn chess_move() {
-        let mut board = Board {
-            board: [[None; 8]; 8],
-        };
+        let mut board = Board::new([[None; 8]; 8]);
 
-        board.set_square(BoardPosition::new(5, 1), Some(Piece(PieceType::King, Player::White)));
+        board.set_square(&BoardPosition::new(5, 1), &Some(Piece(PieceType::King, Player::White)));
 
         assert_eq!(King::validate_move((5, 1), (5, 2), &board), true);
         assert_eq!(King::validate_move((5, 1), (6, 2), &board), true);

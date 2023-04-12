@@ -1,4 +1,4 @@
-use crate::board::{ Board, BoardPosition };
+use crate::board::{ Board, position::BoardPosition };
 
 use super::PartialPiece;
 
@@ -19,7 +19,7 @@ impl PartialPiece for Bishop {
                 from.1 - x.abs_diff(from.0)
             };
 
-            if board.get_square(BoardPosition::from((x, y))).is_some() {
+            if board.get_square(&BoardPosition::from((x, y))).is_some() {
                 return false;
             }
         }
@@ -31,7 +31,7 @@ impl PartialPiece for Bishop {
 #[cfg(test)]
 mod tests {
     use crate::{
-        board::{ Board, BoardPosition },
+        board::{ Board, position::BoardPosition },
         pieces::{ PieceType, Piece, Player, PartialPiece },
     };
 
@@ -39,69 +39,57 @@ mod tests {
 
     #[test]
     fn empty_diag() {
-        let mut board = Board {
-            board: [[None; 8]; 8],
-        };
+        let mut board = Board::new([[None; 8]; 8]);
 
-        board.set_square(BoardPosition::new(1, 1), Some(Piece(PieceType::Bishop, Player::White)));
+        board.set_square(&BoardPosition::new(1, 1), &Some(Piece(PieceType::Bishop, Player::White)));
 
         assert_eq!(Bishop::validate_move((1, 1), (8, 8), &board), true);
     }
 
     #[test]
     fn empty_diag_2() {
-        let mut board = Board {
-            board: [[None; 8]; 8],
-        };
+        let mut board = Board::new([[None; 8]; 8]);
 
-        board.set_square(BoardPosition::new(1, 8), Some(Piece(PieceType::Bishop, Player::White)));
+        board.set_square(&BoardPosition::new(1, 8), &Some(Piece(PieceType::Bishop, Player::White)));
 
         assert_eq!(Bishop::validate_move((1, 8), (8, 1), &board), true);
     }
 
     #[test]
     fn in_the_way_1() {
-        let mut board = Board {
-            board: [[None; 8]; 8],
-        };
+        let mut board = Board::new([[None; 8]; 8]);
 
-        board.set_square(BoardPosition::new(1, 1), Some(Piece(PieceType::Bishop, Player::White)));
-        board.set_square(BoardPosition::new(2, 2), Some(Piece(PieceType::Knight, Player::White)));
+        board.set_square(&BoardPosition::new(1, 1), &Some(Piece(PieceType::Bishop, Player::White)));
+        board.set_square(&BoardPosition::new(2, 2), &Some(Piece(PieceType::Knight, Player::White)));
 
         assert_eq!(Bishop::validate_move((1, 1), (8, 8), &board), false);
     }
 
     #[test]
     fn in_the_way_2() {
-        let mut board = Board {
-            board: [[None; 8]; 8],
-        };
+        let mut board = Board::new([[None; 8]; 8]);
 
-        board.set_square(BoardPosition::new(1, 1), Some(Piece(PieceType::Bishop, Player::White)));
-        board.set_square(BoardPosition::new(7, 7), Some(Piece(PieceType::Rook, Player::Black)));
+        board.set_square(&BoardPosition::new(1, 1), &Some(Piece(PieceType::Bishop, Player::White)));
+        board.set_square(&BoardPosition::new(7, 7), &Some(Piece(PieceType::Rook, Player::Black)));
 
         assert_eq!(Bishop::validate_move((1, 1), (8, 8), &board), false);
     }
 
     #[test]
     fn capture() {
-        let mut board = Board {
-            board: [[None; 8]; 8],
-        };
+        let mut board = Board::new([[None; 8]; 8]);
 
-        board.set_square(BoardPosition::new(1, 1), Some(Piece(PieceType::Bishop, Player::White)));
-        board.set_square(BoardPosition::new(8, 8), Some(Piece(PieceType::Rook, Player::Black)));
+        board.set_square(&BoardPosition::new(1, 1), &Some(Piece(PieceType::Bishop, Player::White)));
+        board.set_square(&BoardPosition::new(8, 8), &Some(Piece(PieceType::Rook, Player::Black)));
 
         assert_eq!(Bishop::validate_move((1, 1), (8, 8), &board), true);
     }
 
     #[test]
     fn vert() {
-        let mut board = Board {
-            board: [[None; 8]; 8],
-        };
+        let mut board = Board::new([[None; 8]; 8]);
 
-        board.set_square(BoardPosition::new(1, 1), Some(Piece(PieceType::Bishop, Player::White)));
+        board.set_square(&BoardPosition::new(1, 1), &Some(Piece(PieceType::Bishop, Player::White)));
 
         assert_eq!(Bishop::validate_move((1, 1), (1, 8), &board), false);
     }
