@@ -43,7 +43,7 @@ mod tests {
 
     #[test]
     fn empty_x() {
-        let mut board = Board::new([[None; 8]; 8]);
+        let mut board = Board::blank_board();
 
         board.set_square(&BoardPosition::new(1, 2), &Some(Piece(PieceType::Rook, Player::White)));
 
@@ -52,7 +52,7 @@ mod tests {
 
     #[test]
     fn empty_y() {
-        let mut board = Board::new([[None; 8]; 8]);
+        let mut board = Board::blank_board();
 
         board.set_square(&BoardPosition::new(1, 1), &Some(Piece(PieceType::Rook, Player::White)));
 
@@ -61,7 +61,7 @@ mod tests {
 
     #[test]
     fn in_the_way_1() {
-        let mut board = Board::new([[None; 8]; 8]);
+        let mut board = Board::blank_board();
 
         board.set_square(&BoardPosition::new(1, 1), &Some(Piece(PieceType::Rook, Player::White)));
         board.set_square(&BoardPosition::new(1, 2), &Some(Piece(PieceType::Knight, Player::White)));
@@ -71,7 +71,7 @@ mod tests {
 
     #[test]
     fn in_the_way_2() {
-        let mut board = Board::new([[None; 8]; 8]);
+        let mut board = Board::blank_board();
 
         board.set_square(&BoardPosition::new(1, 1), &Some(Piece(PieceType::Rook, Player::White)));
         board.set_square(&BoardPosition::new(2, 1), &Some(Piece(PieceType::Knight, Player::White)));
@@ -81,7 +81,7 @@ mod tests {
 
     #[test]
     fn capture() {
-        let mut board = Board::new([[None; 8]; 8]);
+        let mut board = Board::blank_board();
 
         board.set_square(&BoardPosition::new(1, 1), &Some(Piece(PieceType::Rook, Player::White)));
         board.set_square(&BoardPosition::new(1, 8), &Some(Piece(PieceType::Rook, Player::Black)));
@@ -91,7 +91,7 @@ mod tests {
 
     #[test]
     fn diag() {
-        let mut board = Board::new([[None; 8]; 8]);
+        let mut board = Board::blank_board();
 
         board.set_square(&BoardPosition::new(1, 1), &Some(Piece(PieceType::Rook, Player::White)));
 

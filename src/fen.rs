@@ -2,6 +2,8 @@ use std::{ fmt::Display, error };
 
 use crate::{ board::{ Board, position::BoardPosition }, pieces::{ PieceType, Player, Piece } };
 
+pub const STARTING_FEN: &str = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
+
 impl Board {
     pub fn from_fen(fen: &str) -> Result<Self, Error> {
         let fields = fen.split(" ").collect::<Vec<_>>();

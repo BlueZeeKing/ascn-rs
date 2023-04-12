@@ -16,7 +16,7 @@ impl<'a> BoardIterator<'a> {
 }
 
 impl<'a> Iterator for BoardIterator<'a> {
-    type Item = (Piece, BoardPosition);
+    type Item = (&'a Piece, BoardPosition);
 
     fn next(&mut self) -> Option<Self::Item> {
         while self.board.board[self.y][self.x].is_none() {
@@ -31,7 +31,7 @@ impl<'a> Iterator for BoardIterator<'a> {
         }
 
         Some((
-            self.board.board[self.y][self.x].expect("Piece was found but is not gone"),
+            self.board.board[self.y][self.x].as_ref().expect("Piece was found but is not gone"),
             BoardPosition::from_index((self.x as u8, self.y as u8)),
         ))
     }

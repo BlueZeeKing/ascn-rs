@@ -1,4 +1,4 @@
-#[derive(Clone, Copy, Debug)]
+#[derive(Clone, Debug)]
 pub struct BoardPosition(u8, u8);
 
 impl BoardPosition {

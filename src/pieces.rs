@@ -30,7 +30,7 @@ pub trait PartialPiece {
     }
 }
 
-#[derive(Clone, Copy, PartialEq, Debug)]
+#[derive(Clone, PartialEq, Debug)]
 pub enum PieceType {
     Queen,
     King,
@@ -69,7 +69,7 @@ impl Piece {
 
     fn is_check(player: &Player, board: &Board) -> bool {
         for (piece, pos) in BoardIterator::new(board) {
-            if piece != Piece(PieceType::King, *player) {
+            if piece != &Piece(PieceType::King, *player) {
                 continue;
             }
 
@@ -132,7 +132,7 @@ impl Piece {
                     Self::raw_validate_move(
                         &(Move { from: BoardPosition::from((x, y)), to: pos.clone() }),
                         board,
-                        piece.0
+                        &piece.0
                     )
                 {
                     return true;
@@ -167,7 +167,7 @@ impl Piece {
         false
     }
 
-    fn raw_validate_move(chess_move: &Move, board: &Board, piece: PieceType) -> bool {
+    fn raw_validate_move(chess_move: &Move, board: &Board, piece: &PieceType) -> bool {
         let (from, to) = (chess_move.from.tuple(), chess_move.to.tuple());
 
         match piece {
@@ -196,7 +196,7 @@ impl Player {
     }
 }
 
-#[derive(Clone, Copy, PartialEq, Debug)]
+#[derive(Clone, PartialEq, Debug)]
 pub struct Piece(pub PieceType, pub Player);
 
 #[cfg(test)]

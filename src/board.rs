@@ -3,11 +3,22 @@ pub mod position;
 
 use std::fmt::Display;
 
-use crate::pieces::{ Piece, Player, PieceType };
+use crate::{ pieces::{ Piece, Player, PieceType }, fen::STARTING_FEN };
 
 use self::position::BoardPosition;
 
 const RANK_SEPARATOR: &str = "\n---+---+---+---+---+---+---+---\n";
+
+const BLANK_BOARD: [[Option<Piece>; 8]; 8] = [
+    [None, None, None, None, None, None, None, None],
+    [None, None, None, None, None, None, None, None],
+    [None, None, None, None, None, None, None, None],
+    [None, None, None, None, None, None, None, None],
+    [None, None, None, None, None, None, None, None],
+    [None, None, None, None, None, None, None, None],
+    [None, None, None, None, None, None, None, None],
+    [None, None, None, None, None, None, None, None],
+];
 
 #[derive(Clone, Debug)]
 pub struct Board {
@@ -21,7 +32,31 @@ impl Board {
     }
 
     pub fn blank_board() -> Self {
-        Self { board: [[None; 8]; 8], to_move: Player::White }
+        Self {
+            board: [
+                [None, None, None, None, None, None, None, None],
+                [None, None, None, None, None, None, None, None],
+                [None, None, None, None, None, None, None, None],
+                [None, None, None, None, None, None, None, None],
+                [None, None, None, None, None, None, None, None],
+                [None, None, None, None, None, None, None, None],
+                [None, None, None, None, None, None, None, None],
+                [None, None, None, None, None, None, None, None],
+            ],
+            to_move: Player::White,
+        }
+    }
+
+    pub fn starting_board() -> Self {
+        Self::from_fen(STARTING_FEN).expect("Bundled starting board could not be parsed")
+    }
+
+    pub fn set_to_move(&mut self, player: Player) {
+        self.to_move = player;
+    }
+
+    pub fn get_to_move(&self) -> &Player {
+        &self.to_move
     }
 
     pub fn set_square(&mut self, pos: &BoardPosition, value: &Option<Piece>) {
@@ -39,7 +74,12 @@ impl Display for Board {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         let board = self.board
             .iter()
-            .map(|rank| rank.map(|piece| format!(" {} ", piece_to_char(piece))).join("|"))
+            .map(|rank|
+                rank
+                    .clone()
+                    .map(|piece| format!(" {} ", piece_to_char(&piece)))
+                    .join("|")
+            )
             .rev()
             .collect::<Vec<_>>()
             .join(RANK_SEPARATOR);
@@ -47,7 +87,7 @@ impl Display for Board {
     }
 }
 
-fn piece_to_char(possible_piece: Option<Piece>) -> char {
+fn piece_to_char(possible_piece: &Option<Piece>) -> char {
     if let Some(piece) = possible_piece {
         return match piece.0 {
             PieceType::Queen => if piece.1 == Player::Black { '♛' } else { '♕' }
@@ -62,7 +102,7 @@ fn piece_to_char(possible_piece: Option<Piece>) -> char {
     ' '
 }
 
-#[derive(Copy, Clone)]
+#[derive(Clone)]
 pub struct Move {
     pub from: BoardPosition,
     pub to: BoardPosition,

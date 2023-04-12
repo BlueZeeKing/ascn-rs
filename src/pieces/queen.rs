@@ -19,7 +19,7 @@ mod tests {
 
     #[test]
     fn chess_move() {
-        let mut board = Board::new([[None; 8]; 8]);
+        let mut board = Board::blank_board();
 
         board.set_square(&BoardPosition::new(4, 1), &Some(Piece(PieceType::Queen, Player::White)));
 

@@ -21,7 +21,7 @@ mod tests {
 
     #[test]
     fn chess_move() {
-        let mut board = Board::new([[None; 8]; 8]);
+        let mut board = Board::blank_board();
 
         board.set_square(&BoardPosition::new(1, 2), &Some(Piece(PieceType::Knight, Player::White)));
         board.set_square(&BoardPosition::new(3, 3), &Some(Piece(PieceType::Knight, Player::Black)));
