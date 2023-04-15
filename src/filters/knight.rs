@@ -1,4 +1,4 @@
-use shakmaty::{ Square, Chess, Position, Rank, Role, Piece, Board, Color, File, CastlingSide };
+use shakmaty::{ Square, Chess, Position, Rank, Role, Piece, Color, File };
 
 use super::Filter;
 
@@ -13,14 +13,14 @@ impl Filter for Knight {
         let mut square_data: Vec<Option<Square>> = vec![None; 8];
 
         for (index, square) in [
-            (3, 1),
-            (3, -1),
-            (-3, 1),
-            (-3, -1),
-            (1, 3),
-            (1, -3),
-            (-1, 3),
-            (-1, -3),
+            (2, 1),
+            (2, -1),
+            (-2, 1),
+            (-2, -1),
+            (1, 2),
+            (1, -2),
+            (-1, 2),
+            (-1, -2),
         ]
             .iter()
             .map(|(file, rank)|
@@ -73,5 +73,32 @@ impl Filter for Knight {
 
     fn get_overflow_mask() -> u8 {
         0b00000111
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use shakmaty::{ Chess, Square::*, Setup, Role::*, Piece, Color };
+
+    use crate::filters::{ knight::Knight, Filter };
+
+    #[test]
+    fn square_data_test() {
+        let mut setup = Setup::empty();
+        setup.board.set_piece_at(A1, Piece { color: Color::White, role: King });
+        setup.board.set_piece_at(H8, Piece { color: Color::Black, role: King });
+
+        setup.board.set_piece_at(B5, Piece { color: Color::White, role: Knight });
+        setup.board.set_piece_at(C2, Piece { color: Color::White, role: Knight });
+        setup.board.set_piece_at(E6, Piece { color: Color::White, role: Knight });
+        setup.board.set_piece_at(F5, Piece { color: Color::White, role: Knight });
+        setup.board.set_piece_at(F3, Piece { color: Color::White, role: Knight });
+
+        let chess: Chess = setup.position(shakmaty::CastlingMode::Standard).unwrap();
+
+        assert_eq!(
+            Knight::get_square_data(&D4, &chess),
+            vec![Some(F5), Some(F3), Some(B5), None, Some(E6), None, None, Some(C2)]
+        );
     }
 }
