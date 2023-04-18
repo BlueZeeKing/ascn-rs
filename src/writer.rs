@@ -13,6 +13,7 @@ pub struct Writer {
 }
 
 impl Writer {
+    /// Creates a new empty instance of the `Writer`
     pub fn new() -> Self {
         Self {
             core: Vec::new(),
@@ -20,6 +21,7 @@ impl Writer {
         }
     }
 
+    /// Consumes a mutable self and creates a vector of bytes that represents the data
     pub fn get_data(mut self) -> Vec<u8> {
         self.core.push(0);
 
@@ -40,6 +42,12 @@ impl Writer {
         bit_buffer.to_bytes()
     }
 
+    /// Takes in a chess move and a position from shakmaty and adds them to the output
+    ///
+    /// # Arguments
+    ///
+    /// * `chess_move` - A valid move for the position inputted
+    /// * `position` - The current chess position before the `chess_move` has been processed
     pub fn add_move(&mut self, chess_move: &Move, position: &Chess) {
         let to_square: Square;
         let id: u8;

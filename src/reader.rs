@@ -13,6 +13,8 @@ pub struct Reader {
 }
 
 impl Reader {
+    /// Creates a new reader based on the buffer provided
+    /// It also creates a new default chess board
     pub fn new(data: &[u8]) -> Self {
         Reader {
             data: data.to_vec(),
@@ -23,6 +25,7 @@ impl Reader {
 }
 
 impl Iterator for Reader {
+    /// Returns the next move processed and the current state of the board after the move has been applied
     fn next(&mut self) -> Option<Self::Item> {
         let to = Square::try_from(self.data[0] & 0b00111111).expect("Your computer was hit with a radioactive particle and made a 6 bit number greater that 63");
         let id = self.data[0] >> 6;
