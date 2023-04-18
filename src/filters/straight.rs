@@ -74,8 +74,7 @@ fn vertical_checks(
                 from: square,
                 capture: position
                     .board()
-                    .piece_at(*to)
-                    .and_then(|piece| Some(piece.role)),
+                    .piece_at(*to).map(|piece| piece.role),
                 to: *to,
                 promotion: None,
             })
@@ -151,8 +150,7 @@ fn horizontal_checks(
                 from: square,
                 capture: position
                     .board()
-                    .piece_at(*to)
-                    .and_then(|piece| Some(piece.role)),
+                    .piece_at(*to).map(|piece| piece.role),
                 to: *to,
                 promotion: None,
             })

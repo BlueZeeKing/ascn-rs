@@ -89,8 +89,7 @@ fn diagonal_checks(
                 from: square,
                 capture: position
                     .board()
-                    .piece_at(*to)
-                    .and_then(|piece| Some(piece.role)),
+                    .piece_at(*to).map(|piece| piece.role),
                 to: *to,
                 promotion: None,
             })
@@ -118,8 +117,7 @@ fn diagonal_checks(
                         from: square,
                         capture: position
                             .board()
-                            .piece_at(*to)
-                            .and_then(|piece| Some(piece.role)),
+                            .piece_at(*to).map(|piece| piece.role),
                         to: *to,
                         promotion: if to.rank() == Rank::First || to.rank() == Rank::Eighth {
                             Some(Role::Queen)

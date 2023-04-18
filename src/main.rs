@@ -1,7 +1,7 @@
 use std::{ fs::File, io::Write };
 
 use chess::{ writer::Writer, reader::Reader };
-use indicatif::ProgressBar;
+
 use pgn_reader::{ Visitor, BufferedReader };
 use shakmaty::{ Chess, Position };
 
