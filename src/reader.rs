@@ -44,8 +44,11 @@ impl Iterator for Reader {
 
         let index;
 
-        if let Some(i) = square_data.iter().position(|square| square.is_some()) {
-            index = i;
+        if square_data.iter().filter(|square| square.is_some()).count() == 1 {
+            index = square_data
+                .iter()
+                .position(|square| square.is_some())
+                .expect("Could not find previously found valid move (radioactive particle?)");
         } else {
             index = self.bit_buffer.read(overflow_length) as usize;
         }
