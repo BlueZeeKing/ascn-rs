@@ -1,4 +1,4 @@
-use shakmaty::{ Square, Chess, Position, Rank, Role, Piece, File, CastlingSide };
+use shakmaty::{ Square, Chess, Position, Rank, Role, Piece, File, CastlingSide, Move };
 
 use super::Filter;
 
@@ -65,9 +65,21 @@ fn vertical_checks(
     }
 
     if
-        piece.role == Role::Rook ||
-        piece.role == Role::Queen ||
-        (piece.role == Role::King && rank.distance(to.rank()) == 1)
+        (piece.role == Role::Rook ||
+            piece.role == Role::Queen ||
+            (piece.role == Role::King && rank.distance(to.rank()) == 1)) &&
+        position.is_legal(
+            &(Move::Normal {
+                role: piece.role,
+                from: square,
+                capture: position
+                    .board()
+                    .piece_at(*to)
+                    .and_then(|piece| Some(piece.role)),
+                to: *to,
+                promotion: None,
+            })
+        )
     {
         square_data[index] = Some(square);
         return true;
@@ -86,8 +98,21 @@ fn vertical_checks(
         let starting_rank = if piece.color.is_white() { Rank::Second } else { Rank::Seventh };
 
         if
-            (rank.distance(to.rank()) == 2 && rank == starting_rank) ||
-            rank.distance(to.rank()) == 1
+            ((rank.distance(to.rank()) == 2 && rank == starting_rank) ||
+                rank.distance(to.rank()) == 1) &&
+            position.is_legal(
+                &(Move::Normal {
+                    role: Role::Pawn,
+                    from: square,
+                    capture: None,
+                    to: *to,
+                    promotion: if to.rank() == Rank::First || to.rank() == Rank::Eighth {
+                        Some(Role::Queen)
+                    } else {
+                        None
+                    },
+                })
+            )
         {
             square_data[index] = Some(square);
         }
@@ -117,9 +142,21 @@ fn horizontal_checks(
     }
 
     if
-        piece.role == Role::Rook ||
-        piece.role == Role::Queen ||
-        (piece.role == Role::King && file.distance(to.file()) == 1)
+        (piece.role == Role::Rook ||
+            piece.role == Role::Queen ||
+            (piece.role == Role::King && file.distance(to.file()) == 1)) &&
+        position.is_legal(
+            &(Move::Normal {
+                role: piece.role,
+                from: square,
+                capture: position
+                    .board()
+                    .piece_at(*to)
+                    .and_then(|piece| Some(piece.role)),
+                to: *to,
+                promotion: None,
+            })
+        )
     {
         square_data[index] = Some(square);
         return true;
@@ -134,7 +171,22 @@ fn horizontal_checks(
             CastlingSide::QueenSide
         };
 
-        if castles.has(piece.color, side) {
+        if
+            castles.has(piece.color, side) &&
+            position.is_legal(
+                &(Move::Castle {
+                    king: square,
+                    rook: Square::from_coords(
+                        if side.is_king_side() {
+                            File::H
+                        } else {
+                            File::A
+                        },
+                        square.rank()
+                    ),
+                })
+            )
+        {
             square_data[index] = Some(square);
         }
     }
@@ -191,7 +243,7 @@ mod tests {
     #[test]
     fn complex_square_data_test() {
         let mut setup = Setup::empty();
-        setup.board.set_piece_at(D4, Piece { color: Color::White, role: Pawn });
+        setup.board.set_piece_at(D4, Piece { color: Color::Black, role: Pawn });
         setup.board.set_piece_at(H4, Piece { color: Color::White, role: Rook });
         setup.board.set_piece_at(D1, Piece { color: Color::White, role: Queen });
         setup.board.set_piece_at(D5, Piece { color: Color::White, role: King });

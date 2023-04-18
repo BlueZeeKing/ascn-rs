@@ -80,9 +80,21 @@ fn diagonal_checks(
     }
 
     if
-        piece.role == Role::Bishop ||
-        piece.role == Role::Queen ||
-        (piece.role == Role::King && square.rank().distance(to.rank()) == 1)
+        (piece.role == Role::Bishop ||
+            piece.role == Role::Queen ||
+            (piece.role == Role::King && square.rank().distance(to.rank()) == 1)) &&
+        position.is_legal(
+            &(Move::Normal {
+                role: piece.role,
+                from: square,
+                capture: position
+                    .board()
+                    .piece_at(*to)
+                    .and_then(|piece| Some(piece.role)),
+                to: *to,
+                promotion: None,
+            })
+        )
     {
         square_data[index] = Some(square);
         return true;
@@ -99,8 +111,25 @@ fn diagonal_checks(
         }
 
         if
-            position.board().piece_at(*to).is_some() ||
-            position.en_passant_moves().contains(&(Move::EnPassant { from: square, to: *to }))
+            (position.board().piece_at(*to).is_some() &&
+                position.is_legal(
+                    &(Move::Normal {
+                        role: Role::Pawn,
+                        from: square,
+                        capture: position
+                            .board()
+                            .piece_at(*to)
+                            .and_then(|piece| Some(piece.role)),
+                        to: *to,
+                        promotion: if to.rank() == Rank::First || to.rank() == Rank::Eighth {
+                            Some(Role::Queen)
+                        } else {
+                            None
+                        },
+                    })
+                )) ||
+            (position.en_passant_moves().contains(&(Move::EnPassant { from: square, to: *to })) &&
+                position.is_legal(&(Move::EnPassant { from: square, to: *to })))
         {
             square_data[index] = Some(square);
         }

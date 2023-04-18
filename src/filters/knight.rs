@@ -1,4 +1,4 @@
-use shakmaty::{ Square, Chess, Position, Rank, Role, Piece, Color, File };
+use shakmaty::{ Square, Chess, Position, Rank, Role, Piece, Color, File, Move };
 
 use super::Filter;
 
@@ -39,7 +39,20 @@ impl Filter for Knight {
                 position
                     .board()
                     .piece_at(square)
-                    .unwrap_or(Piece { color: Color::White, role: Role::Pawn }).role == Role::Knight
+                    .unwrap_or(Piece { color: Color::White, role: Role::Pawn }).role ==
+                    Role::Knight &&
+                position.is_legal(
+                    &(Move::Normal {
+                        role: Role::Knight,
+                        from: square,
+                        capture: position
+                            .board()
+                            .piece_at(*to)
+                            .and_then(|piece| Some(piece.role)),
+                        to: *to,
+                        promotion: None,
+                    })
+                )
             {
                 square_data[index] = Some(square);
             }
