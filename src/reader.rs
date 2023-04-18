@@ -24,7 +24,7 @@ impl Reader {
 
 impl Iterator for Reader {
     fn next(&mut self) -> Option<Self::Item> {
-        let to = Square::try_from(self.data[0] & 0b00111111).unwrap();
+        let to = Square::try_from(self.data[0] & 0b00111111).expect("Your computer was hit with a radioactive particle and made a 6 bit number greater that 63");
         let id = self.data[0] >> 6;
 
         let (square_data, overflow_length) = match id {
@@ -41,18 +41,18 @@ impl Iterator for Reader {
 
         let index;
 
-        if square_data.iter().filter(|square| square.is_some()).count() == 1 {
-            index = square_data
-                .iter()
-                .position(|square| square.is_some())
-                .unwrap();
+        if let Some(i) = square_data.iter().position(|square| square.is_some()) {
+            index = i;
         } else {
             index = self.bit_buffer.read(overflow_length) as usize;
         }
 
-        let from = square_data[index].unwrap();
+        let from = square_data[index].expect("Could not find valid move from overflow index");
 
-        let from_piece = self.chess.board().piece_at(from).unwrap();
+        let from_piece =
+            self.chess.board().piece_at(from).expect(
+                "Could not find piece at previously validated square (radioactive particle?)",
+            );
 
         let chess_move = if id == 2
             && from_piece.role == Role::Pawn
@@ -87,7 +87,10 @@ impl Iterator for Reader {
             }
         };
 
-        self.chess = self.chess.clone().play(&chess_move).unwrap();
+        self.chess =
+            self.chess.clone().play(&chess_move).expect(
+                "Invalid move while reading (Should not be possible even with modified input)",
+            );
 
         Some((chess_move, self.chess.clone()))
     }
