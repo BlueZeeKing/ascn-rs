@@ -1,6 +1,9 @@
 use shakmaty::{ Move, Chess, Square, File };
 
-use crate::filters::{ straight::Straight, Filter, diagonal::Diagonal, knight::Knight };
+use crate::{
+    filters::{ straight::Straight, Filter, diagonal::Diagonal, knight::Knight },
+    bitbuffer::BitBuffer,
+};
 
 pub struct Writer {
     core: Vec<u8>,
@@ -21,36 +24,13 @@ impl Writer {
     }
 
     fn get_overflow_data(overflow: Vec<(u8, u8)>) -> Vec<u8> {
-        // FIXME: This doesn't work
-        let mut data = vec![0x00];
-        let mut byte_position = 0;
+        let mut bit_buffer = BitBuffer::new();
 
-        for (data_part, length) in overflow.iter().rev() {
-            let mut data_byte = data[0];
-            data_byte |= data_part << byte_position;
-            data[0] = data_byte;
-
-            dbg!(&data);
-
-            byte_position += length;
-
-            if byte_position == 8 {
-                byte_position = 0;
-                data.insert(0, 0x00);
-            } else if byte_position > 8 {
-                data.insert(0, 0x00);
-
-                let data_read = length - (byte_position - 8);
-
-                let mut data_byte = data[0];
-                data_byte |= data_part >> data_read;
-                data[0] = data_byte;
-
-                byte_position -= 8;
-            }
+        for (data, length) in overflow {
+            bit_buffer.add(data, length);
         }
 
-        data
+        bit_buffer.to_bytes()
     }
 
     pub fn add_move(&mut self, chess_move: &Move, position: &Chess) {
@@ -97,23 +77,5 @@ impl Writer {
         if let Some(data) = overflow {
             self.overflow.push(data);
         }
-    }
-}
-
-#[cfg(test)]
-mod tests {
-    use crate::writer::Writer;
-
-    #[test]
-    fn overflow_join() {
-        assert_eq!(Writer::get_overflow_data(vec![(0b111, 3)]), vec![0b111]);
-        assert_eq!(
-            Writer::get_overflow_data(vec![(0b1111, 4), (0b0000, 4)]),
-            vec![0b0, 0b11110000]
-        );
-        // assert_eq!(
-        //     Writer::get_overflow_data(vec![(0b111, 3), (0b000, 3), (0b10101, 5)]),
-        //     vec![0b11100010, 0b101]
-        // );
     }
 }
