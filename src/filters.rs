@@ -1,6 +1,6 @@
 use shakmaty::{ Square, Chess };
 
-use self::{ straight::Straight, diagonal::Diagonal, knight::Knight };
+
 
 pub mod straight;
 pub mod diagonal;

@@ -15,10 +15,7 @@ pub struct Reader {
 impl Reader {
     pub fn new(data: &[u8]) -> Self {
         Reader {
-            data: data
-                .iter()
-                .map(|byte| *byte)
-                .collect(),
+            data: data.to_vec(),
             chess: Chess::default(),
             bit_buffer: BitBuffer::from_bytes(data),
         }
@@ -86,8 +83,7 @@ impl Iterator for Reader {
                 from,
                 capture: self.chess
                     .board()
-                    .piece_at(to)
-                    .and_then(|piece| Some(piece.role)),
+                    .piece_at(to).map(|piece| piece.role),
                 to,
                 promotion: if
                     from_piece.role == Role::Pawn &&

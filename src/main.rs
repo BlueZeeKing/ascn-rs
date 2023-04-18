@@ -2,7 +2,7 @@ use std::fs::File;
 
 use chess::{ writer::Writer, reader::Reader };
 use pgn_reader::{ Visitor, BufferedReader };
-use shakmaty::{ Chess, Square, Role, Position, fen::Fen };
+use shakmaty::{ Chess, Position, fen::Fen };
 
 struct TestVisitor {
     chess: Chess,
