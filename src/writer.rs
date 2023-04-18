@@ -1,8 +1,8 @@
-use shakmaty::{ Move, Chess, Square, File, Role };
+use shakmaty::{Chess, File, Move, Role, Square};
 
 use crate::{
-    filters::{ straight::Straight, Filter, diagonal::Diagonal, knight::Knight },
     bitbuffer::BitBuffer,
+    filters::{diagonal::Diagonal, knight::Knight, straight::Straight, Filter},
     PROMOTION_KEY,
 };
 
@@ -14,13 +14,20 @@ pub struct Writer {
 
 impl Writer {
     pub fn new() -> Self {
-        Self { core: Vec::new(), overflow: Vec::new() }
+        Self {
+            core: Vec::new(),
+            overflow: Vec::new(),
+        }
     }
 
     pub fn get_data(mut self) -> Vec<u8> {
         self.core.push(0);
 
-        self.core.iter().chain(Self::get_overflow_data(self.overflow).iter()).copied().collect()
+        self.core
+            .iter()
+            .chain(Self::get_overflow_data(self.overflow).iter())
+            .copied()
+            .collect()
     }
 
     fn get_overflow_data(overflow: Vec<(u8, u8)>) -> Vec<u8> {
@@ -40,7 +47,13 @@ impl Writer {
         let mut promotion_role: Option<Role> = None;
 
         match chess_move {
-            Move::Normal { role: _, from, capture: _, to, promotion } => {
+            Move::Normal {
+                role: _,
+                from,
+                capture: _,
+                to,
+                promotion,
+            } => {
                 promotion_role = *promotion;
 
                 to_square = *to;
@@ -64,9 +77,10 @@ impl Writer {
             Move::Castle { king, rook } => {
                 to_square = Square::from_coords(
                     File::try_from(
-                        i8::from(king.file()) + (if rook.file() < king.file() { -2 } else { 2 })
-                    ).expect("Could not get final king square for castling move"),
-                    king.rank()
+                        i8::from(king.file()) + (if rook.file() < king.file() { -2 } else { 2 }),
+                    )
+                    .expect("Could not get final king square for castling move"),
+                    king.rank(),
                 );
 
                 id = Straight::get_id();
@@ -82,7 +96,8 @@ impl Writer {
         }
 
         if let Some(promotion) = promotion_role {
-            let promotion_index = PROMOTION_KEY.iter()
+            let promotion_index = PROMOTION_KEY
+                .iter()
                 .position(|role| *role == promotion)
                 .expect("Not a valid promotion piece") as u8;
 

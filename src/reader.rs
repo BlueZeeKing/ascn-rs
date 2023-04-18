@@ -1,8 +1,8 @@
-use shakmaty::{ Move, Square, Chess, Position, Role, File, Rank };
+use shakmaty::{Chess, File, Move, Position, Rank, Role, Square};
 
 use crate::{
-    filters::{ straight::Straight, diagonal::Diagonal, knight::Knight, Filter },
     bitbuffer::BitBuffer,
+    filters::{diagonal::Diagonal, knight::Knight, straight::Straight, Filter},
     PROMOTION_KEY,
 };
 
@@ -41,12 +41,7 @@ impl Iterator for Reader {
 
         let index;
 
-        if
-            square_data
-                .iter()
-                .filter(|square| square.is_some())
-                .count() == 1
-        {
+        if square_data.iter().filter(|square| square.is_some()).count() == 1 {
             index = square_data
                 .iter()
                 .position(|square| square.is_some())
@@ -59,10 +54,9 @@ impl Iterator for Reader {
 
         let from_piece = self.chess.board().piece_at(from).unwrap();
 
-        let chess_move = if
-            id == 2 &&
-            from_piece.role == Role::Pawn &&
-            self.chess.board().piece_at(to).is_none()
+        let chess_move = if id == 2
+            && from_piece.role == Role::Pawn
+            && self.chess.board().piece_at(to).is_none()
         {
             Move::EnPassant { from, to }
         } else if id == 3 && from_piece.role == Role::King && from.file().distance(to.file()) == 2 {
@@ -74,20 +68,17 @@ impl Iterator for Reader {
                     } else {
                         File::H
                     },
-                    from.rank()
+                    from.rank(),
                 ),
             }
         } else {
             Move::Normal {
                 role: from_piece.role,
                 from,
-                capture: self.chess
-                    .board()
-                    .piece_at(to).map(|piece| piece.role),
+                capture: self.chess.board().piece_at(to).map(|piece| piece.role),
                 to,
-                promotion: if
-                    from_piece.role == Role::Pawn &&
-                    (to.rank() == Rank::First || to.rank() == Rank::Eighth)
+                promotion: if from_piece.role == Role::Pawn
+                    && (to.rank() == Rank::First || to.rank() == Rank::Eighth)
                 {
                     Some(PROMOTION_KEY[self.bit_buffer.read(2) as usize])
                 } else {

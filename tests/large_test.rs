@@ -1,9 +1,9 @@
 use std::fs::File;
 
-use ascn_rs::{ writer::Writer, reader::Reader };
+use ascn_rs::{reader::Reader, writer::Writer};
 use indicatif::ProgressBar;
-use pgn_reader::{ Visitor, BufferedReader };
-use shakmaty::{ Chess, Position };
+use pgn_reader::{BufferedReader, Visitor};
+use shakmaty::{Chess, Position};
 
 const NUM_GAMES: u64 = 121332;
 

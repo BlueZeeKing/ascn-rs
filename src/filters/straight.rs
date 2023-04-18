@@ -1,4 +1,4 @@
-use shakmaty::{ Square, Chess, Position, Rank, Role, Piece, File, CastlingSide, Move };
+use shakmaty::{CastlingSide, Chess, File, Move, Piece, Position, Rank, Role, Square};
 
 use super::Filter;
 
@@ -49,7 +49,7 @@ fn vertical_checks(
     square_data: &mut [Option<Square>],
     to: &Square,
     position: &Chess,
-    rank: i32
+    rank: i32,
 ) -> bool {
     let rank = Rank::try_from(rank).unwrap();
     let square = Square::from_coords(to.file(), rank);
@@ -64,20 +64,17 @@ fn vertical_checks(
         return false;
     }
 
-    if
-        (piece.role == Role::Rook ||
-            piece.role == Role::Queen ||
-            (piece.role == Role::King && rank.distance(to.rank()) == 1)) &&
-        position.is_legal(
+    if (piece.role == Role::Rook
+        || piece.role == Role::Queen
+        || (piece.role == Role::King && rank.distance(to.rank()) == 1))
+        && position.is_legal(
             &(Move::Normal {
                 role: piece.role,
                 from: square,
-                capture: position
-                    .board()
-                    .piece_at(*to).map(|piece| piece.role),
+                capture: position.board().piece_at(*to).map(|piece| piece.role),
                 to: *to,
                 promotion: None,
-            })
+            }),
         )
     {
         square_data[index] = Some(square);
@@ -87,19 +84,21 @@ fn vertical_checks(
     if piece.role == Role::Pawn {
         let should_move_forward = piece.color.is_white();
 
-        if
-            (should_move_forward && square.rank() > to.rank()) ||
-            (!should_move_forward && square.rank() < to.rank())
+        if (should_move_forward && square.rank() > to.rank())
+            || (!should_move_forward && square.rank() < to.rank())
         {
             return true;
         }
 
-        let starting_rank = if piece.color.is_white() { Rank::Second } else { Rank::Seventh };
+        let starting_rank = if piece.color.is_white() {
+            Rank::Second
+        } else {
+            Rank::Seventh
+        };
 
-        if
-            ((rank.distance(to.rank()) == 2 && rank == starting_rank) ||
-                rank.distance(to.rank()) == 1) &&
-            position.is_legal(
+        if ((rank.distance(to.rank()) == 2 && rank == starting_rank)
+            || rank.distance(to.rank()) == 1)
+            && position.is_legal(
                 &(Move::Normal {
                     role: Role::Pawn,
                     from: square,
@@ -110,7 +109,7 @@ fn vertical_checks(
                     } else {
                         None
                     },
-                })
+                }),
             )
         {
             square_data[index] = Some(square);
@@ -125,7 +124,7 @@ fn horizontal_checks(
     square_data: &mut [Option<Square>],
     to: &Square,
     position: &Chess,
-    file: i32
+    file: i32,
 ) -> bool {
     let file = File::try_from(file).unwrap_or_else(|_| panic!("Could not parse number: {file}"));
     let square = Square::from_coords(file, to.rank());
@@ -140,20 +139,17 @@ fn horizontal_checks(
         return false;
     }
 
-    if
-        (piece.role == Role::Rook ||
-            piece.role == Role::Queen ||
-            (piece.role == Role::King && file.distance(to.file()) == 1)) &&
-        position.is_legal(
+    if (piece.role == Role::Rook
+        || piece.role == Role::Queen
+        || (piece.role == Role::King && file.distance(to.file()) == 1))
+        && position.is_legal(
             &(Move::Normal {
                 role: piece.role,
                 from: square,
-                capture: position
-                    .board()
-                    .piece_at(*to).map(|piece| piece.role),
+                capture: position.board().piece_at(*to).map(|piece| piece.role),
                 to: *to,
                 promotion: None,
-            })
+            }),
         )
     {
         square_data[index] = Some(square);
@@ -169,9 +165,8 @@ fn horizontal_checks(
             CastlingSide::QueenSide
         };
 
-        if
-            castles.has(piece.color, side) &&
-            position.is_legal(
+        if castles.has(piece.color, side)
+            && position.is_legal(
                 &(Move::Castle {
                     king: square,
                     rook: Square::from_coords(
@@ -180,9 +175,9 @@ fn horizontal_checks(
                         } else {
                             File::A
                         },
-                        square.rank()
+                        square.rank(),
                     ),
-                })
+                }),
             )
         {
             square_data[index] = Some(square);
@@ -194,7 +189,7 @@ fn horizontal_checks(
 
 #[cfg(test)]
 mod tests {
-    use shakmaty::{ Chess, Square::*, Setup, Position, Move, Role::*, Piece, Color };
+    use shakmaty::{Chess, Color, Move, Piece, Position, Role::*, Setup, Square::*};
 
     use crate::filters::Filter;
 
@@ -204,49 +199,167 @@ mod tests {
     fn simple_square_data_test() {
         let chess = Chess::default();
 
-        assert_eq!(Straight::get_square_data(&A4, &chess), vec![None, None, Some(A2), None]);
+        assert_eq!(
+            Straight::get_square_data(&A4, &chess),
+            vec![None, None, Some(A2), None]
+        );
     }
 
     #[test]
     fn castling_square_data_test() {
         let chess = Chess::default()
-            .play(&(Move::Normal { role: Pawn, from: D2, capture: None, to: D3, promotion: None }))
-            .unwrap()
-            .play(&(Move::Normal { role: Pawn, from: H7, capture: None, to: H6, promotion: None }))
-            .unwrap()
             .play(
-                &(Move::Normal { role: Bishop, from: C1, capture: None, to: D2, promotion: None })
+                &(Move::Normal {
+                    role: Pawn,
+                    from: D2,
+                    capture: None,
+                    to: D3,
+                    promotion: None,
+                }),
             )
             .unwrap()
-            .play(&(Move::Normal { role: Pawn, from: G7, capture: None, to: G6, promotion: None }))
-            .unwrap()
             .play(
-                &(Move::Normal { role: Knight, from: B1, capture: None, to: C3, promotion: None })
+                &(Move::Normal {
+                    role: Pawn,
+                    from: H7,
+                    capture: None,
+                    to: H6,
+                    promotion: None,
+                }),
             )
             .unwrap()
-            .play(&(Move::Normal { role: Pawn, from: F7, capture: None, to: F6, promotion: None }))
+            .play(
+                &(Move::Normal {
+                    role: Bishop,
+                    from: C1,
+                    capture: None,
+                    to: D2,
+                    promotion: None,
+                }),
+            )
             .unwrap()
-            .play(&(Move::Normal { role: Pawn, from: E2, capture: None, to: E3, promotion: None }))
+            .play(
+                &(Move::Normal {
+                    role: Pawn,
+                    from: G7,
+                    capture: None,
+                    to: G6,
+                    promotion: None,
+                }),
+            )
             .unwrap()
-            .play(&(Move::Normal { role: Pawn, from: E7, capture: None, to: E6, promotion: None }))
+            .play(
+                &(Move::Normal {
+                    role: Knight,
+                    from: B1,
+                    capture: None,
+                    to: C3,
+                    promotion: None,
+                }),
+            )
             .unwrap()
-            .play(&(Move::Normal { role: Queen, from: D1, capture: None, to: E2, promotion: None }))
+            .play(
+                &(Move::Normal {
+                    role: Pawn,
+                    from: F7,
+                    capture: None,
+                    to: F6,
+                    promotion: None,
+                }),
+            )
             .unwrap()
-            .play(&(Move::Normal { role: Pawn, from: D7, capture: None, to: D6, promotion: None }))
+            .play(
+                &(Move::Normal {
+                    role: Pawn,
+                    from: E2,
+                    capture: None,
+                    to: E3,
+                    promotion: None,
+                }),
+            )
+            .unwrap()
+            .play(
+                &(Move::Normal {
+                    role: Pawn,
+                    from: E7,
+                    capture: None,
+                    to: E6,
+                    promotion: None,
+                }),
+            )
+            .unwrap()
+            .play(
+                &(Move::Normal {
+                    role: Queen,
+                    from: D1,
+                    capture: None,
+                    to: E2,
+                    promotion: None,
+                }),
+            )
+            .unwrap()
+            .play(
+                &(Move::Normal {
+                    role: Pawn,
+                    from: D7,
+                    capture: None,
+                    to: D6,
+                    promotion: None,
+                }),
+            )
             .unwrap();
 
-        assert_eq!(Straight::get_square_data(&C1, &chess), vec![None, Some(E1), None, Some(A1)]);
+        assert_eq!(
+            Straight::get_square_data(&C1, &chess),
+            vec![None, Some(E1), None, Some(A1)]
+        );
     }
 
     #[test]
     fn complex_square_data_test() {
         let mut setup = Setup::empty();
-        setup.board.set_piece_at(D4, Piece { color: Color::Black, role: Pawn });
-        setup.board.set_piece_at(H4, Piece { color: Color::White, role: Rook });
-        setup.board.set_piece_at(D1, Piece { color: Color::White, role: Queen });
-        setup.board.set_piece_at(D5, Piece { color: Color::White, role: King });
-        setup.board.set_piece_at(A8, Piece { color: Color::Black, role: King });
-        setup.board.set_piece_at(A2, Piece { color: Color::White, role: Pawn });
+        setup.board.set_piece_at(
+            D4,
+            Piece {
+                color: Color::Black,
+                role: Pawn,
+            },
+        );
+        setup.board.set_piece_at(
+            H4,
+            Piece {
+                color: Color::White,
+                role: Rook,
+            },
+        );
+        setup.board.set_piece_at(
+            D1,
+            Piece {
+                color: Color::White,
+                role: Queen,
+            },
+        );
+        setup.board.set_piece_at(
+            D5,
+            Piece {
+                color: Color::White,
+                role: King,
+            },
+        );
+        setup.board.set_piece_at(
+            A8,
+            Piece {
+                color: Color::Black,
+                role: King,
+            },
+        );
+        setup.board.set_piece_at(
+            A2,
+            Piece {
+                color: Color::White,
+                role: Pawn,
+            },
+        );
 
         let chess: Chess = setup.position(shakmaty::CastlingMode::Standard).unwrap();
 
@@ -254,6 +367,9 @@ mod tests {
             Straight::get_square_data(&D4, &chess),
             vec![Some(D5), Some(H4), Some(D1), None]
         );
-        assert_eq!(Straight::get_square_data(&A4, &chess), vec![None, None, Some(A2), None]);
+        assert_eq!(
+            Straight::get_square_data(&A4, &chess),
+            vec![None, None, Some(A2), None]
+        );
     }
 }

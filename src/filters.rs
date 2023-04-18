@@ -1,10 +1,8 @@
-use shakmaty::{ Square, Chess };
+use shakmaty::{Chess, Square};
 
-
-
-pub mod straight;
 pub mod diagonal;
 pub mod knight;
+pub mod straight;
 
 pub trait Filter {
     fn get_raw_id() -> u8;
@@ -17,24 +15,19 @@ pub trait Filter {
         // the number of the overflow bits
         let square_data = Self::get_square_data(to, position);
 
-        if
-            square_data
-                .iter()
-                .filter(|square| square.is_some())
-                .count() == 1
-        {
+        if square_data.iter().filter(|square| square.is_some()).count() == 1 {
             None
         } else {
             Some((
                 square_data
                     .iter()
-                    .position(|square| (
+                    .position(|square| {
                         if let Some(square) = square {
                             square == from
                         } else {
                             false
                         }
-                    ))
+                    })
                     .expect("Could not find original square") as u8,
                 2,
             ))
