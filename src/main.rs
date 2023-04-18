@@ -1,6 +1,6 @@
 use std::{ fs::File, io::Write };
 
-use chess::{ writer::Writer, reader::Reader };
+use ascn_rs::{ writer::Writer, reader::Reader };
 
 use pgn_reader::{ Visitor, BufferedReader };
 use shakmaty::{ Chess, Position };

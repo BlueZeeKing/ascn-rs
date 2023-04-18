@@ -9,6 +9,15 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "8da52d66c7071e2e3fa2a1e5c6d088fec47b593032b254f5e980de8ea54454d6"
 
 [[package]]
+name = "ascn-rs"
+version = "0.1.0"
+dependencies = [
+ "indicatif",
+ "pgn-reader",
+ "shakmaty",
+]
+
+[[package]]
 name = "autocfg"
 version = "1.1.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -27,15 +36,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "9dd6407f73a9b8b6162d8a2ef999fe6afd7cc15902ebf42c5cd296addf17e0ad"
 dependencies = [
  "num-traits",
-]
-
-[[package]]
-name = "chess"
-version = "0.1.0"
-dependencies = [
- "indicatif",
- "pgn-reader",
- "shakmaty",
 ]
 
 [[package]]
