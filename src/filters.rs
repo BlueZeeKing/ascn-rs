@@ -1,14 +1,16 @@
 use shakmaty::{ Square, Chess };
 
+use self::{ straight::Straight, diagonal::Diagonal, knight::Knight };
+
 pub mod straight;
 pub mod diagonal;
 pub mod knight;
 
 pub trait Filter {
-    fn get_id() -> u8;
+    fn get_raw_id() -> u8;
 
-    fn get_raw_id() -> u8 {
-        Self::get_id() << 6
+    fn get_id() -> u8 {
+        Self::get_raw_id() << 6
     }
 
     fn get_overflow(to: &Square, from: &Square, position: &Chess) -> Option<(u8, u8)> {

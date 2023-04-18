@@ -5,7 +5,7 @@ use super::Filter;
 pub struct Knight {}
 
 impl Filter for Knight {
-    fn get_id() -> u8 {
+    fn get_raw_id() -> u8 {
         1
     }
 
@@ -23,6 +23,11 @@ impl Filter for Knight {
             (-1, -2),
         ]
             .iter()
+            .filter(
+                |(file, rank)|
+                    (0..8).contains(&(i32::from(to.file()) + file)) &&
+                    (0..8).contains(&(i32::from(to.rank()) + rank))
+            )
             .map(|(file, rank)|
                 Square::from_coords(
                     File::try_from(i32::from(to.file()) + file).unwrap(),

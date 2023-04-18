@@ -5,7 +5,7 @@ use super::Filter;
 pub struct Straight {}
 
 impl Filter for Straight {
-    fn get_id() -> u8 {
+    fn get_raw_id() -> u8 {
         3
     }
 

@@ -5,7 +5,7 @@ use super::Filter;
 pub struct Diagonal {}
 
 impl Filter for Diagonal {
-    fn get_id() -> u8 {
+    fn get_raw_id() -> u8 {
         2
     }
 

@@ -1,10 +1,12 @@
-use shakmaty::{ Move, Chess, Square, File };
+use shakmaty::{ Move, Chess, Square, File, Role };
 
 use crate::{
     filters::{ straight::Straight, Filter, diagonal::Diagonal, knight::Knight },
     bitbuffer::BitBuffer,
+    PROMOTION_KEY,
 };
 
+#[derive(Clone)]
 pub struct Writer {
     core: Vec<u8>,
     overflow: Vec<(u8, u8)>, // data, # of bits
@@ -15,11 +17,10 @@ impl Writer {
         Self { core: Vec::new(), overflow: Vec::new() }
     }
 
-    pub fn get_data(self) -> Vec<u8> {
-        self.core
-            .iter()
-            .chain(Self::get_overflow_data(self.overflow).iter()).copied()
-            .collect()
+    pub fn get_data(mut self) -> Vec<u8> {
+        self.core.push(0);
+
+        self.core.iter().chain(Self::get_overflow_data(self.overflow).iter()).copied().collect()
     }
 
     fn get_overflow_data(overflow: Vec<(u8, u8)>) -> Vec<u8> {
@@ -36,9 +37,12 @@ impl Writer {
         let to_square: Square;
         let id: u8;
         let overflow: Option<(u8, u8)>; // data, num bits
+        let mut promotion_role: Option<Role> = None;
 
         match chess_move {
-            Move::Normal { role: _, from, capture: _, to, promotion: _ } => {
+            Move::Normal { role: _, from, capture: _, to, promotion } => {
+                promotion_role = *promotion;
+
                 to_square = *to;
 
                 if from.rank() == to.rank() || from.file() == to.file() {
@@ -75,6 +79,14 @@ impl Writer {
 
         if let Some(data) = overflow {
             self.overflow.push(data);
+        }
+
+        if let Some(promotion) = promotion_role {
+            let promotion_index = PROMOTION_KEY.iter()
+                .position(|role| *role == promotion)
+                .expect("Not a valid promotion piece") as u8;
+
+            self.overflow.push((promotion_index, 2))
         }
     }
 }
