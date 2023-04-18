@@ -1,16 +1,4 @@
-use shakmaty::{
-    Square,
-    Chess,
-    Position,
-    Rank,
-    Role,
-    Piece,
-    Board,
-    Color,
-    File,
-    CastlingSide,
-    Move,
-};
+use shakmaty::{ Square, Chess, Position, Rank, Role, Piece, File, Move };
 
 use super::Filter;
 
@@ -24,8 +12,8 @@ impl Filter for Diagonal {
     fn get_square_data(to: &Square, position: &Chess) -> Vec<Option<Square>> {
         let mut square_data: Vec<Option<Square>> = vec![None; 4];
 
-        for square in (i32::from(to.rank()) + 1..9)
-            .zip(i32::from(to.file()) + 1..9)
+        for square in (i32::from(to.rank()) + 1..8)
+            .zip(i32::from(to.file()) + 1..8)
             .map(|(rank, file)|
                 Square::from_coords(File::try_from(file).unwrap(), Rank::try_from(rank).unwrap())
             ) {
@@ -35,9 +23,9 @@ impl Filter for Diagonal {
             }
         }
 
-        for square in (1..i32::from(to.rank()))
+        for square in (0..i32::from(to.rank()))
             .rev()
-            .zip(i32::from(to.file()) + 1..9)
+            .zip(i32::from(to.file()) + 1..8)
             .map(|(rank, file)|
                 Square::from_coords(File::try_from(file).unwrap(), Rank::try_from(rank).unwrap())
             ) {
@@ -47,9 +35,9 @@ impl Filter for Diagonal {
             }
         }
 
-        for square in (1..i32::from(to.rank()))
+        for square in (0..i32::from(to.rank()))
             .rev()
-            .zip((1..i32::from(to.file())).rev())
+            .zip((0..i32::from(to.file())).rev())
             .map(|(rank, file)|
                 Square::from_coords(File::try_from(file).unwrap(), Rank::try_from(rank).unwrap())
             ) {
@@ -59,8 +47,8 @@ impl Filter for Diagonal {
             }
         }
 
-        for square in (i32::from(to.rank()) + 1..9)
-            .zip((1..i32::from(to.file())).rev())
+        for square in (i32::from(to.rank()) + 1..8)
+            .zip((0..i32::from(to.file())).rev())
             .map(|(rank, file)|
                 Square::from_coords(File::try_from(file).unwrap(), Rank::try_from(rank).unwrap())
             ) {
@@ -119,4 +107,48 @@ fn diagonal_checks(
     }
 
     true
+}
+
+#[cfg(test)]
+mod tests {
+    use shakmaty::{ Chess, Square::*, Setup, Role::*, Piece, Color, Position, Move };
+
+    use crate::filters::{ diagonal::Diagonal, Filter };
+
+    #[test]
+    fn square_data_test() {
+        let mut setup = Setup::empty();
+        setup.board.set_piece_at(D3, Piece { color: Color::White, role: Pawn });
+        setup.board.set_piece_at(H1, Piece { color: Color::White, role: Bishop });
+        setup.board.set_piece_at(G6, Piece { color: Color::White, role: Queen });
+        setup.board.set_piece_at(D5, Piece { color: Color::White, role: King });
+
+        setup.board.set_piece_at(A8, Piece { color: Color::Black, role: King });
+
+        setup.board.set_piece_at(A2, Piece { color: Color::White, role: Pawn });
+        setup.board.set_piece_at(B3, Piece { color: Color::Black, role: Pawn });
+
+        let chess: Chess = setup.position(shakmaty::CastlingMode::Standard).unwrap();
+
+        assert_eq!(Diagonal::get_square_data(&B3, &chess), vec![None, None, Some(A2), None]);
+        assert_eq!(
+            Diagonal::get_square_data(&E4, &chess),
+            vec![Some(G6), Some(H1), None, Some(D5)]
+        );
+    }
+
+    #[test]
+    fn ep_square_data_test() {
+        let chess = Chess::default()
+            .play(&(Move::Normal { role: Pawn, from: A2, capture: None, to: A4, promotion: None }))
+            .unwrap()
+            .play(&(Move::Normal { role: Pawn, from: H7, capture: None, to: H6, promotion: None }))
+            .unwrap()
+            .play(&(Move::Normal { role: Pawn, from: A4, capture: None, to: A5, promotion: None }))
+            .unwrap()
+            .play(&(Move::Normal { role: Pawn, from: B7, capture: None, to: B5, promotion: None }))
+            .unwrap();
+
+        assert_eq!(Diagonal::get_square_data(&B6, &chess), vec![None, None, Some(A5), None]);
+    }
 }

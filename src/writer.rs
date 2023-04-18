@@ -18,8 +18,7 @@ impl Writer {
     pub fn get_data(self) -> Vec<u8> {
         self.core
             .iter()
-            .chain(Self::get_overflow_data(self.overflow).iter())
-            .map(|byte| *byte)
+            .chain(Self::get_overflow_data(self.overflow).iter()).copied()
             .collect()
     }
 
@@ -39,7 +38,7 @@ impl Writer {
         let overflow: Option<(u8, u8)>; // data, num bits
 
         match chess_move {
-            Move::Normal { role, from, capture, to, promotion } => {
+            Move::Normal { role: _, from, capture: _, to, promotion: _ } => {
                 to_square = *to;
 
                 if from.rank() == to.rank() || from.file() == to.file() {
@@ -69,7 +68,7 @@ impl Writer {
                 id = Straight::get_id();
                 overflow = Straight::get_overflow(&to_square, king, position);
             }
-            Move::Put { role, to } => todo!(),
+            Move::Put { role: _, to: _ } => todo!(),
         }
 
         self.core.push(u8::from(to_square) | id);

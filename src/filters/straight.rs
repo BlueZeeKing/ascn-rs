@@ -1,4 +1,4 @@
-use shakmaty::{ Square, Chess, Position, Rank, Role, Piece, Board, Color, File, CastlingSide };
+use shakmaty::{ Square, Chess, Position, Rank, Role, Piece, File, CastlingSide };
 
 use super::Filter;
 
@@ -103,7 +103,7 @@ fn horizontal_checks(
     position: &Chess,
     file: i32
 ) -> bool {
-    let file = File::try_from(file).expect(&format!("Could not parse number: {}", file));
+    let file = File::try_from(file).unwrap_or_else(|_| panic!("Could not parse number: {file}"));
     let square = Square::from_coords(file, to.rank());
 
     let possible_piece = position.board().piece_at(square);
