@@ -7,6 +7,8 @@ license = "MIT AND GPL-3.0+"
 authors = ["BlueZeeKing"]
 repository = "https://github.com/BlueZeeKing/ascn-rs"
 
+exclude = ["tests/*"]
+
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
