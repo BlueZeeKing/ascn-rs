@@ -1,8 +1,8 @@
-use shakmaty::Role;
+use chess::Piece;
 
 mod bitbuffer;
 mod filters;
 pub mod reader;
 pub mod writer;
 
-const PROMOTION_KEY: [Role; 4] = [Role::Queen, Role::Bishop, Role::Rook, Role::Knight];
+const PROMOTION_KEY: [Piece; 4] = [Piece::Queen, Piece::Bishop, Piece::Rook, Piece::Knight];

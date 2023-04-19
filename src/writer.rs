@@ -1,4 +1,4 @@
-use shakmaty::{Chess, File, Move, Role, Square};
+use chess::{Board, ChessMove};
 
 use crate::{
     bitbuffer::BitBuffer,
@@ -48,62 +48,44 @@ impl Writer {
     ///
     /// * `chess_move` - A valid move for the position inputted
     /// * `position` - The current chess position before the `chess_move` has been processed
-    pub fn add_move(&mut self, chess_move: &Move, position: &Chess) {
-        let to_square: Square;
+    pub fn add_move(&mut self, chess_move: &ChessMove, position: &Board) {
+        let to_square = chess_move.get_dest();
         let id: u8;
         let overflow: Option<(u8, u8)>; // data, num bits
-        let mut promotion_role: Option<Role> = None;
 
-        match chess_move {
-            Move::Normal {
-                role: _,
-                from,
-                capture: _,
-                to,
-                promotion,
-            } => {
-                promotion_role = *promotion;
-
-                to_square = *to;
-
-                if from.rank() == to.rank() || from.file() == to.file() {
-                    id = Straight::get_id();
-                    overflow = Straight::get_overflow(to, from, position);
-                } else if from.rank().distance(to.rank()) == from.file().distance(to.file()) {
-                    id = Diagonal::get_id();
-                    overflow = Diagonal::get_overflow(to, from, position);
-                } else {
-                    id = Knight::get_id();
-                    overflow = Knight::get_overflow(to, from, position);
-                }
-            }
-            Move::EnPassant { from, to } => {
-                to_square = *to;
-                id = Diagonal::get_id();
-                overflow = Diagonal::get_overflow(to, from, position);
-            }
-            Move::Castle { king, rook } => {
-                to_square = Square::from_coords(
-                    File::try_from(
-                        i8::from(king.file()) + (if rook.file() < king.file() { -2 } else { 2 }),
-                    )
-                    .expect("Could not get final king square for castling move"),
-                    king.rank(),
-                );
-
-                id = Straight::get_id();
-                overflow = Straight::get_overflow(&to_square, king, position);
-            }
-            Move::Put { role: _, to: _ } => todo!(),
+        if chess_move
+            .get_source()
+            .get_rank()
+            .to_index()
+            .abs_diff(chess_move.get_dest().get_rank().to_index())
+            == chess_move
+                .get_source()
+                .get_file()
+                .to_index()
+                .abs_diff(chess_move.get_dest().get_file().to_index())
+        {
+            id = Diagonal::get_id();
+            overflow =
+                Diagonal::get_overflow(&chess_move.get_dest(), &chess_move.get_source(), position);
+        } else if chess_move.get_dest().get_rank() == chess_move.get_source().get_rank()
+            || chess_move.get_dest().get_file() == chess_move.get_source().get_file()
+        {
+            id = Straight::get_id();
+            overflow =
+                Straight::get_overflow(&chess_move.get_dest(), &chess_move.get_source(), position);
+        } else {
+            id = Knight::get_id();
+            overflow =
+                Knight::get_overflow(&chess_move.get_dest(), &chess_move.get_source(), position);
         }
 
-        self.core.push(u8::from(to_square) | id);
+        self.core.push(to_square.to_int() | id);
 
         if let Some(data) = overflow {
             self.overflow.push(data);
         }
 
-        if let Some(promotion) = promotion_role {
+        if let Some(promotion) = chess_move.get_promotion() {
             let promotion_index = PROMOTION_KEY
                 .iter()
                 .position(|role| *role == promotion)

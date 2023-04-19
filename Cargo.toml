@@ -12,6 +12,6 @@ exclude = ["tests/*"]
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
+chess = "3.2.0"
 indicatif = "0.17.3"
-pgn-reader = "0.23.0"
-shakmaty = "0.24.0"
+regex = "1.7.3"
