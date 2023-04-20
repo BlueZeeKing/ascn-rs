@@ -14,4 +14,4 @@ exclude = ["tests/*"]
 [dependencies]
 chess = "3.2.0"
 indicatif = "0.17.3"
-regex = "1.7.3"
+pgn-rs = { git = "https://github.com/BlueZeeKing/pgn-rs.git" }
