@@ -3,7 +3,7 @@ name = "ascn-rs"
 version = "0.1.0"
 edition = "2021"
 description = "A chess encoding similar to PGN but significantly smaller"
-license = "MIT AND GPL-3.0+"
+license = "MIT"
 authors = ["BlueZeeKing"]
 repository = "https://github.com/BlueZeeKing/ascn-rs"
 
