@@ -1,3 +1,4 @@
+#[derive(Clone)]
 pub struct BitBuffer {
     data: Vec<bool>,
 }

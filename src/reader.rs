@@ -7,6 +7,7 @@ use crate::{
     PROMOTION_KEY,
 };
 
+#[derive(Clone)]
 pub struct Reader {
     data: Vec<u8>,
     chess: Board,
