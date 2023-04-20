@@ -2,6 +2,7 @@ use chess::Piece;
 
 mod bitbuffer;
 mod filters;
+pub mod outcome;
 pub mod reader;
 pub mod writer;
 

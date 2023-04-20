@@ -3,6 +3,7 @@ use chess::{Board, ChessMove};
 use crate::{
     bitbuffer::BitBuffer,
     filters::{diagonal::Diagonal, knight::Knight, straight::Straight, Filter},
+    outcome::Outcome,
     PROMOTION_KEY,
 };
 
@@ -22,8 +23,8 @@ impl Writer {
     }
 
     /// Consumes a mutable self and creates a vector of bytes that represents the data
-    pub fn get_data(mut self) -> Vec<u8> {
-        self.core.push(0);
+    pub fn get_data(mut self, outcome: Option<Outcome>) -> Vec<u8> {
+        self.core.push(outcome.unwrap_or_default().get_id());
 
         self.core
             .iter()

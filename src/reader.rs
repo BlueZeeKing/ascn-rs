@@ -3,6 +3,7 @@ use chess::{Board, ChessMove, Piece, Square};
 use crate::{
     bitbuffer::BitBuffer,
     filters::{diagonal::Diagonal, knight::Knight, straight::Straight, Filter},
+    outcome::Outcome,
     PROMOTION_KEY,
 };
 
@@ -10,6 +11,7 @@ pub struct Reader {
     data: Vec<u8>,
     chess: Board,
     bit_buffer: BitBuffer,
+    outcome: Option<Outcome>,
 }
 
 impl Reader {
@@ -20,7 +22,12 @@ impl Reader {
             data: data.to_vec(),
             chess: Board::default(),
             bit_buffer: BitBuffer::from_bytes(data),
+            outcome: None,
         }
+    }
+
+    pub fn get_outcome(&self) -> &Option<Outcome> {
+        &self.outcome
     }
 }
 
@@ -41,6 +48,7 @@ impl Iterator for Reader {
             2 => (Diagonal::get_square_data(&to, &self.chess), 2),
             1 => (Knight::get_square_data(&to, &self.chess), 3),
             0 => {
+                self.outcome = Some(Outcome::from_id(self.data[0]));
                 return None;
             }
             _ => panic!("Unknown filter"),

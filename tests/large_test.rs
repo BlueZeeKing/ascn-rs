@@ -37,7 +37,9 @@ impl Visitor for TestVisitor {
     }
 
     fn end_game(&mut self) {
-        let (_, board) = Reader::new(&self.writer.clone().get_data()).last().unwrap();
+        let (_, board) = Reader::new(&self.writer.clone().get_data(None))
+            .last()
+            .unwrap();
         assert_eq!(self.chess, board);
         self.progress_bar.inc(1);
     }
