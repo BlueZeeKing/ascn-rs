@@ -1,4 +1,4 @@
-use shakmaty::{Chess, Square};
+use chess::{Board, Square};
 
 pub mod diagonal;
 pub mod knight;
@@ -11,7 +11,7 @@ pub trait Filter {
         Self::get_raw_id() << 6
     }
 
-    fn get_overflow(to: &Square, from: &Square, position: &Chess) -> Option<(u8, u8)> {
+    fn get_overflow(to: &Square, from: &Square, position: &Board) -> Option<(u8, u8)> {
         // the number of the overflow bits
         let square_data = Self::get_square_data(to, position);
 
@@ -34,7 +34,7 @@ pub trait Filter {
         }
     }
 
-    fn get_square_data(to: &Square, position: &Chess) -> Vec<Option<Square>>;
+    fn get_square_data(to: &Square, position: &Board) -> Vec<Option<Square>>;
 
     fn get_overflow_mask() -> u8 {
         0b00000011

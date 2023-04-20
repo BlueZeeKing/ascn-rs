@@ -1,4 +1,4 @@
-use shakmaty::{Chess, File, Move, Position, Rank, Role, Square};
+use chess::{Board, ChessMove, Piece, Square};
 
 use crate::{
     bitbuffer::BitBuffer,
@@ -8,7 +8,7 @@ use crate::{
 
 pub struct Reader {
     data: Vec<u8>,
-    chess: Chess,
+    chess: Board,
     bit_buffer: BitBuffer,
 }
 
@@ -18,16 +18,22 @@ impl Reader {
     pub fn new(data: &[u8]) -> Self {
         Reader {
             data: data.to_vec(),
-            chess: Chess::default(),
+            chess: Board::default(),
             bit_buffer: BitBuffer::from_bytes(data),
         }
     }
 }
 
+fn safe_get_square(index: u8) -> Square {
+    assert!((0..64).contains(&index));
+
+    unsafe { Square::new(index) }
+}
+
 impl Iterator for Reader {
     /// Returns the next move processed and the current state of the board after the move has been applied
     fn next(&mut self) -> Option<Self::Item> {
-        let to = Square::try_from(self.data[0] & 0b00111111).expect("Your computer was hit with a radioactive particle and made a 6 bit number greater that 63");
+        let to = safe_get_square(self.data[0] & 0b00111111);
         let id = self.data[0] >> 6;
 
         let (square_data, overflow_length) = match id {
@@ -55,51 +61,27 @@ impl Iterator for Reader {
 
         let from = square_data[index].expect("Could not find valid move from overflow index");
 
-        let from_piece =
-            self.chess.board().piece_at(from).expect(
-                "Could not find piece at previously validated square (radioactive particle?)",
-            );
+        let from_piece = self
+            .chess
+            .piece_on(from)
+            .expect("Could not find piece at previously validated square (radioactive particle?)");
 
-        let chess_move = if id == 2
-            && from_piece.role == Role::Pawn
-            && self.chess.board().piece_at(to).is_none()
-        {
-            Move::EnPassant { from, to }
-        } else if id == 3 && from_piece.role == Role::King && from.file().distance(to.file()) == 2 {
-            Move::Castle {
-                king: from,
-                rook: Square::from_coords(
-                    if to.file() == File::C {
-                        File::A
-                    } else {
-                        File::H
-                    },
-                    from.rank(),
-                ),
-            }
-        } else {
-            Move::Normal {
-                role: from_piece.role,
-                from,
-                capture: self.chess.board().piece_at(to).map(|piece| piece.role),
-                to,
-                promotion: if from_piece.role == Role::Pawn
-                    && (to.rank() == Rank::First || to.rank() == Rank::Eighth)
-                {
-                    Some(PROMOTION_KEY[self.bit_buffer.read(2) as usize])
-                } else {
-                    None
-                },
-            }
-        };
+        let chess_move = ChessMove::new(
+            from,
+            to,
+            if from_piece == Piece::Pawn
+                && self.chess.color_on(from).unwrap().to_their_backrank() == to.get_rank()
+            {
+                Some(PROMOTION_KEY[self.bit_buffer.read(2) as usize])
+            } else {
+                None
+            },
+        );
 
-        self.chess =
-            self.chess.clone().play(&chess_move).expect(
-                "Invalid move while reading (Should not be possible even with modified input)",
-            );
+        self.chess.clone().make_move(chess_move, &mut self.chess);
 
         Some((chess_move, self.chess.clone()))
     }
 
-    type Item = (Move, Chess);
+    type Item = (ChessMove, Board);
 }

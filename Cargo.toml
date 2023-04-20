@@ -3,7 +3,7 @@ name = "ascn-rs"
 version = "0.1.0"
 edition = "2021"
 description = "A chess encoding similar to PGN but significantly smaller"
-license = "MIT AND GPL-3.0+"
+license = "MIT"
 authors = ["BlueZeeKing"]
 repository = "https://github.com/BlueZeeKing/ascn-rs"
 
@@ -12,6 +12,6 @@ exclude = ["tests/*"]
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
+chess = "3.2.0"
 indicatif = "0.17.3"
-pgn-reader = "0.23.0"
-shakmaty = "0.24.0"
+pgn-rs = { git = "https://github.com/BlueZeeKing/pgn-rs.git" }

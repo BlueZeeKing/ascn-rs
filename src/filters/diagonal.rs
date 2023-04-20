@@ -1,4 +1,4 @@
-use shakmaty::{Chess, File, Move, Piece, Position, Rank, Role, Square};
+use chess::{Board, ChessMove, Color, File, Piece, Rank, Square};
 
 use super::Filter;
 
@@ -9,14 +9,12 @@ impl Filter for Diagonal {
         2
     }
 
-    fn get_square_data(to: &Square, position: &Chess) -> Vec<Option<Square>> {
+    fn get_square_data(to: &Square, position: &Board) -> Vec<Option<Square>> {
         let mut square_data: Vec<Option<Square>> = vec![None; 4];
 
-        for square in (i32::from(to.rank()) + 1..8)
-            .zip(i32::from(to.file()) + 1..8)
-            .map(|(rank, file)| {
-                Square::from_coords(File::try_from(file).unwrap(), Rank::try_from(rank).unwrap())
-            })
+        for square in (to.get_rank().to_index() + 1..8)
+            .zip(to.get_file().to_index() + 1..8)
+            .map(|(rank, file)| Square::make_square(Rank::from_index(rank), File::from_index(file)))
         {
             // up and right
             if diagonal_checks(0, &mut square_data, to, position, square) {
@@ -24,12 +22,10 @@ impl Filter for Diagonal {
             }
         }
 
-        for square in (0..i32::from(to.rank()))
+        for square in (0..to.get_rank().to_index())
             .rev()
-            .zip(i32::from(to.file()) + 1..8)
-            .map(|(rank, file)| {
-                Square::from_coords(File::try_from(file).unwrap(), Rank::try_from(rank).unwrap())
-            })
+            .zip(to.get_file().to_index() + 1..8)
+            .map(|(rank, file)| Square::make_square(Rank::from_index(rank), File::from_index(file)))
         {
             // down and right
             if diagonal_checks(1, &mut square_data, to, position, square) {
@@ -37,12 +33,10 @@ impl Filter for Diagonal {
             }
         }
 
-        for square in (0..i32::from(to.rank()))
+        for square in (0..to.get_rank().to_index())
             .rev()
-            .zip((0..i32::from(to.file())).rev())
-            .map(|(rank, file)| {
-                Square::from_coords(File::try_from(file).unwrap(), Rank::try_from(rank).unwrap())
-            })
+            .zip((0..to.get_file().to_index()).rev())
+            .map(|(rank, file)| Square::make_square(Rank::from_index(rank), File::from_index(file)))
         {
             // right
             if diagonal_checks(2, &mut square_data, to, position, square) {
@@ -50,11 +44,9 @@ impl Filter for Diagonal {
             }
         }
 
-        for square in (i32::from(to.rank()) + 1..8)
-            .zip((0..i32::from(to.file())).rev())
-            .map(|(rank, file)| {
-                Square::from_coords(File::try_from(file).unwrap(), Rank::try_from(rank).unwrap())
-            })
+        for square in (to.get_rank().to_index() + 1..8)
+            .zip((0..to.get_file().to_index()).rev())
+            .map(|(rank, file)| Square::make_square(Rank::from_index(rank), File::from_index(file)))
         {
             // left
             if diagonal_checks(3, &mut square_data, to, position, square) {
@@ -70,10 +62,10 @@ fn diagonal_checks(
     index: usize,
     square_data: &mut [Option<Square>],
     to: &Square,
-    position: &Chess,
+    position: &Board,
     square: Square,
 ) -> bool {
-    let possible_piece = position.board().piece_at(square);
+    let possible_piece = position.piece_on(square);
 
     let piece: Piece;
 
@@ -83,56 +75,45 @@ fn diagonal_checks(
         return false;
     }
 
-    if (piece.role == Role::Bishop
-        || piece.role == Role::Queen
-        || (piece.role == Role::King && square.rank().distance(to.rank()) == 1))
-        && position.is_legal(
-            &(Move::Normal {
-                role: piece.role,
-                from: square,
-                capture: position.board().piece_at(*to).map(|piece| piece.role),
-                to: *to,
-                promotion: None,
-            }),
-        )
+    if (piece == Piece::Bishop
+        || piece == Piece::Queen
+        || (piece == Piece::King
+            && square
+                .get_rank()
+                .to_index()
+                .abs_diff(to.get_rank().to_index())
+                == 1))
+        && position.legal(ChessMove::new(square, *to, None))
     {
         square_data[index] = Some(square);
         return true;
     }
 
-    if piece.role == Role::Pawn && square.rank().distance(to.rank()) == 1 {
-        let should_move_forward = piece.color.is_white();
+    if piece == Piece::Pawn
+        && square
+            .get_rank()
+            .to_index()
+            .abs_diff(to.get_rank().to_index())
+            == 1
+    {
+        let should_move_forward = position.color_on(square).unwrap() == Color::White;
 
-        if (should_move_forward && square.rank() > to.rank())
-            || (!should_move_forward && square.rank() < to.rank())
+        if (should_move_forward && square.get_rank() > to.get_rank())
+            || (!should_move_forward && square.get_rank() < to.get_rank())
         {
             return true;
         }
 
-        if (position.board().piece_at(*to).is_some()
-            && position.is_legal(
-                &(Move::Normal {
-                    role: Role::Pawn,
-                    from: square,
-                    capture: position.board().piece_at(*to).map(|piece| piece.role),
-                    to: *to,
-                    promotion: if to.rank() == Rank::First || to.rank() == Rank::Eighth {
-                        Some(Role::Queen)
-                    } else {
-                        None
-                    },
-                }),
-            ))
-            || (position.en_passant_moves().contains(
-                &(Move::EnPassant {
-                    from: square,
-                    to: *to,
-                }),
-            ) && position.is_legal(
-                &(Move::EnPassant {
-                    from: square,
-                    to: *to,
-                }),
+        if (position.piece_on(*to).is_some()
+            || matches!(position.en_passant(), Some(opponent_square) if matches!(to.backward(position.color_on(square).unwrap()), Some(to) if to == opponent_square)))
+            && position.legal(ChessMove::new(
+                square,
+                *to,
+                if to.get_rank() == position.color_on(square).unwrap().to_their_backrank() {
+                    Some(Piece::Queen)
+                } else {
+                    None
+                },
             ))
         {
             square_data[index] = Some(square);
@@ -144,124 +125,47 @@ fn diagonal_checks(
 
 #[cfg(test)]
 mod tests {
-    use shakmaty::{Chess, Color, Move, Piece, Position, Role::*, Setup, Square::*};
+    use chess::{Board, BoardBuilder, ChessMove, Color::*, Piece::*, Square};
 
     use crate::filters::{diagonal::Diagonal, Filter};
 
     #[test]
     fn square_data_test() {
-        let mut setup = Setup::empty();
-        setup.board.set_piece_at(
-            D3,
-            Piece {
-                color: Color::White,
-                role: Pawn,
-            },
-        );
-        setup.board.set_piece_at(
-            H1,
-            Piece {
-                color: Color::White,
-                role: Bishop,
-            },
-        );
-        setup.board.set_piece_at(
-            G6,
-            Piece {
-                color: Color::White,
-                role: Queen,
-            },
-        );
-        setup.board.set_piece_at(
-            D5,
-            Piece {
-                color: Color::White,
-                role: King,
-            },
-        );
+        let mut setup = BoardBuilder::new();
 
-        setup.board.set_piece_at(
-            A8,
-            Piece {
-                color: Color::Black,
-                role: King,
-            },
-        );
+        setup.piece(Square::D3, Pawn, White);
+        setup.piece(Square::H1, Bishop, White);
+        setup.piece(Square::G6, Queen, White);
+        setup.piece(Square::D5, King, White);
 
-        setup.board.set_piece_at(
-            A2,
-            Piece {
-                color: Color::White,
-                role: Pawn,
-            },
-        );
-        setup.board.set_piece_at(
-            B3,
-            Piece {
-                color: Color::Black,
-                role: Pawn,
-            },
-        );
+        setup.piece(Square::A8, King, Black);
 
-        let chess: Chess = setup.position(shakmaty::CastlingMode::Standard).unwrap();
+        setup.piece(Square::A2, Pawn, White);
+        setup.piece(Square::B3, Pawn, Black);
+
+        let chess = Board::try_from(setup).unwrap();
 
         assert_eq!(
-            Diagonal::get_square_data(&B3, &chess),
-            vec![None, None, Some(A2), None]
+            Diagonal::get_square_data(&Square::B3, &chess),
+            vec![None, None, Some(Square::A2), None]
         );
         assert_eq!(
-            Diagonal::get_square_data(&E4, &chess),
-            vec![Some(G6), Some(H1), None, Some(D5)]
+            Diagonal::get_square_data(&Square::E4, &chess),
+            vec![Some(Square::G6), Some(Square::H1), None, Some(Square::D5)]
         );
     }
 
     #[test]
     fn ep_square_data_test() {
-        let chess = Chess::default()
-            .play(
-                &(Move::Normal {
-                    role: Pawn,
-                    from: A2,
-                    capture: None,
-                    to: A4,
-                    promotion: None,
-                }),
-            )
-            .unwrap()
-            .play(
-                &(Move::Normal {
-                    role: Pawn,
-                    from: H7,
-                    capture: None,
-                    to: H6,
-                    promotion: None,
-                }),
-            )
-            .unwrap()
-            .play(
-                &(Move::Normal {
-                    role: Pawn,
-                    from: A4,
-                    capture: None,
-                    to: A5,
-                    promotion: None,
-                }),
-            )
-            .unwrap()
-            .play(
-                &(Move::Normal {
-                    role: Pawn,
-                    from: B7,
-                    capture: None,
-                    to: B5,
-                    promotion: None,
-                }),
-            )
-            .unwrap();
+        let chess = Board::default()
+            .make_move_new(ChessMove::new(Square::A2, Square::A4, None))
+            .make_move_new(ChessMove::new(Square::H7, Square::H6, None))
+            .make_move_new(ChessMove::new(Square::A4, Square::A5, None))
+            .make_move_new(ChessMove::new(Square::B7, Square::B5, None));
 
         assert_eq!(
-            Diagonal::get_square_data(&B6, &chess),
-            vec![None, None, Some(A5), None]
+            Diagonal::get_square_data(&Square::B6, &chess),
+            vec![None, None, Some(Square::A5), None]
         );
     }
 }
