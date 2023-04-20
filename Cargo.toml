@@ -1,6 +1,6 @@
 [package]
 name = "ascn-rs"
-version = "0.2.0"
+version = "0.3.0"
 edition = "2021"
 description = "A chess encoding similar to PGN but significantly smaller"
 license = "MIT"
@@ -14,4 +14,4 @@ exclude = ["tests/*"]
 [dependencies]
 chess = "3.2.0"
 indicatif = "0.17.3"
-pgn-rs = "0.0.1"
+pgn-rs = "0.0.2"

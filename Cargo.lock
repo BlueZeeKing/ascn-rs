@@ -25,7 +25,7 @@ checksum = "23b62fc65de8e4e7f52534fb52b0f3ed04746ae267519eef2a83941e8085068b"
 
 [[package]]
 name = "ascn-rs"
-version = "0.2.0"
+version = "0.3.0"
 dependencies = [
  "chess",
  "indicatif",
@@ -180,9 +180,9 @@ dependencies = [
 
 [[package]]
 name = "pgn-rs"
-version = "0.0.1"
+version = "0.0.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "81979d66d7453222fef523bc2a6d5a31a5014993f49390ff6b6f016ef80b7b79"
+checksum = "cee88445924028ed12beac4080a86fcb1882e9bf1e583103eba32f38ebfd90ba"
 dependencies = [
  "chess",
  "indicatif",

@@ -1,6 +1,6 @@
 use std::fs::read_to_string;
 
-use ascn_rs::{reader::Reader, writer::Writer};
+use ascn_rs::{outcome::Outcome, reader::Reader, writer::Writer};
 use chess::Board;
 use indicatif::ProgressBar;
 use pgn_rs::{san::SAN, PGNReader, Visitor};
@@ -11,6 +11,7 @@ struct TestVisitor {
     chess: Board,
     writer: Writer,
     progress_bar: ProgressBar,
+    outcome: Option<Outcome>,
 }
 
 impl TestVisitor {
@@ -19,14 +20,16 @@ impl TestVisitor {
             chess: Board::default(),
             writer: Writer::new(),
             progress_bar: ProgressBar::new(NUM_GAMES),
+            outcome: None,
         }
     }
 }
 
-impl Visitor for TestVisitor {
+impl<'a> Visitor<'a> for TestVisitor {
     fn start_game(&mut self) {
         self.chess = Board::default();
         self.writer = Writer::new();
+        self.outcome = None
     }
 
     fn san(&mut self, san: SAN) {
@@ -36,11 +39,21 @@ impl Visitor for TestVisitor {
         self.chess = self.chess.make_move_new(chess_move);
     }
 
-    fn end_game(&mut self) {
-        let (_, board) = Reader::new(&self.writer.clone().get_data(None))
-            .last()
-            .unwrap();
+    fn end_game(&mut self, outcome: &str) {
+        let mut reader = Reader::new(
+            &self
+                .writer
+                .clone()
+                .get_data(Some(Outcome::from_string(outcome))),
+        );
+
+        let (_, board) = reader.clone().last().unwrap();
         assert_eq!(self.chess, board);
+
+        while let Some(_) = reader.next() {}
+
+        assert_eq!(reader.get_outcome(), &Some(Outcome::from_string(outcome)));
+
         self.progress_bar.inc(1);
     }
 

@@ -36,7 +36,7 @@ impl BitBuffer {
             }
         }
 
-        if current_byte != 0 {
+        if byte_pos != 0 {
             result.push(current_byte);
         }
 
