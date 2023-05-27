@@ -13,6 +13,12 @@ pub struct Writer {
     overflow: Vec<(u8, u8)>, // data, # of bits
 }
 
+impl Default for Writer {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl Writer {
     /// Creates a new empty instance of the `Writer`
     pub fn new() -> Self {

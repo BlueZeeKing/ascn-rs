@@ -57,16 +57,14 @@ impl Iterator for Reader {
 
         self.data.remove(0);
 
-        let index;
-
-        if square_data.iter().filter(|square| square.is_some()).count() == 1 {
-            index = square_data
+        let index = if square_data.iter().filter(|square| square.is_some()).count() == 1 {
+            square_data
                 .iter()
                 .position(|square| square.is_some())
-                .expect("Could not find previously found valid move (radioactive particle?)");
+                .expect("Could not find previously found valid move (radioactive particle?)")
         } else {
-            index = self.bit_buffer.read(overflow_length) as usize;
-        }
+            self.bit_buffer.read(overflow_length) as usize
+        };
 
         let from = square_data[index].expect("Could not find valid move from overflow index");
 
@@ -89,7 +87,7 @@ impl Iterator for Reader {
 
         self.chess.clone().make_move(chess_move, &mut self.chess);
 
-        Some((chess_move, self.chess.clone()))
+        Some((chess_move, self.chess))
     }
 
     type Item = (ChessMove, Board);

@@ -50,6 +50,7 @@ impl<'a> Visitor<'a> for TestVisitor {
         let (_, board) = reader.clone().last().unwrap();
         assert_eq!(self.chess, board);
 
+        #[allow(clippy::while_let_on_iterator)] // consumes without taking ownership
         while let Some(_) = reader.next() {}
 
         assert_eq!(reader.get_outcome(), &Some(Outcome::from_string(outcome)));

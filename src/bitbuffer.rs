@@ -20,7 +20,7 @@ impl BitBuffer {
         self.data.insert(0, data);
     }
 
-    pub fn to_bytes(self) -> Vec<u8> {
+    pub fn to_bytes(&self) -> Vec<u8> {
         let mut byte_pos = 0;
         let mut current_byte = 0u8;
         let mut result = Vec::new();
@@ -119,5 +119,39 @@ mod tests {
         assert_eq!(bit_buffer.read(4), 0b1101);
         assert_eq!(bit_buffer.read(2), 0b11);
         assert_eq!(bit_buffer.read(5), 0b11001);
+    }
+
+    #[test]
+    fn exam_test() {
+        // Triggers the last if statement
+        let mut bit_buffer = BitBuffer::new();
+
+        bit_buffer.add(0b110, 3);
+        bit_buffer.add(0b1101, 4);
+        bit_buffer.add(0b11, 2);
+
+        dbg!(&bit_buffer.clone().to_bytes());
+
+        let mut bit_buffer = BitBuffer::from_bytes(&bit_buffer.to_bytes());
+
+        assert_eq!(bit_buffer.read(3), 0b110);
+        assert_eq!(bit_buffer.read(4), 0b1101);
+        assert_eq!(bit_buffer.read(2), 0b11);
+
+        // Does not trigger the last if statement
+
+        let mut bit_buffer = BitBuffer::new();
+
+        bit_buffer.add(0b110, 3);
+        bit_buffer.add(0b1101, 4);
+        bit_buffer.add(0b1, 1);
+
+        dbg!(&bit_buffer.clone().to_bytes());
+
+        let mut bit_buffer = BitBuffer::from_bytes(&bit_buffer.to_bytes());
+
+        assert_eq!(bit_buffer.read(3), 0b110);
+        assert_eq!(bit_buffer.read(4), 0b1101);
+        assert_eq!(bit_buffer.read(1), 0b1);
     }
 }
